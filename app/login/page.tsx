@@ -17,7 +17,7 @@ const LoginPage = () => {
         <Link href="/" className="flex items-center gap-2 self-center">
           <Image src={Logo} alt="Logo" className="size-10" />
           <h1 className="text-2xl font-bold">
-            Job<span className="text-primary">Marshal</span>
+            Work<span className="text-primary">Nest</span>
           </h1>
         </Link>
         <LoginForm redirectUrl={redirectUrl} />
