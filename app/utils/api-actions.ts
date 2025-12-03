@@ -342,3 +342,80 @@ export async function getSavedJobs(): Promise<JobPost[]> {
     }
   }
 }
+
+// Job application actions
+export interface JobApplicationData {
+  cover_letter?: string;
+}
+
+export async function applyToJob(jobId: string, data: JobApplicationData = {}): Promise<void> {
+  try {
+    await apiClient.post(`/api/jobs/${jobId}/apply/`, data);
+  } catch (error: any) {
+    if (error.status === 401) {
+      await authClient.refreshToken();
+      await apiClient.post(`/api/jobs/${jobId}/apply/`, data);
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getMyApplications(): Promise<any[]> {
+  try {
+    const response = await apiClient.get<{ results: any[] }>('/api/my-applications/');
+    return response.results || [];
+  } catch (error: any) {
+    if (error.status === 401) {
+      await authClient.refreshToken();
+      const response = await apiClient.get<{ results: any[] }>('/api/my-applications/');
+      return response.results || [];
+    } else {
+      throw error;
+    }
+  }
+}
+
+// Company application management
+export async function getJobApplications(jobId: string): Promise<{ results: any[], count: number, job_title: string }> {
+  try {
+    const response = await apiClient.get<{ results: any[], count: number, job_title: string }>(`/api/jobs/${jobId}/applications/`);
+    return response;
+  } catch (error: any) {
+    if (error.status === 401) {
+      await authClient.refreshToken();
+      const response = await apiClient.get<{ results: any[], count: number, job_title: string }>(`/api/jobs/${jobId}/applications/`);
+      return response;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getAllCompanyApplications(): Promise<{ results: any[], count: number }> {
+  try {
+    const response = await apiClient.get<{ results: any[], count: number }>('/api/company-applications/');
+    return response;
+  } catch (error: any) {
+    if (error.status === 401) {
+      await authClient.refreshToken();
+      const response = await apiClient.get<{ results: any[], count: number }>('/api/company-applications/');
+      return response;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function updateApplicationStatus(applicationId: string, status: string): Promise<void> {
+  try {
+    await apiClient.patch(`/api/applications/${applicationId}/status/`, { status });
+  } catch (error: any) {
+    if (error.status === 401) {
+      await authClient.refreshToken();
+      await apiClient.patch(`/api/applications/${applicationId}/status/`, { status });
+    } else {
+      throw error;
+    }
+  }
+}

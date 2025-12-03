@@ -14,6 +14,8 @@ interface iAppProps {
     id: string;
     jobTitle: string;
     job_title: string;
+    jobDescription?: string;
+    job_description?: string;
     salaryFrom: number;
     salary_from: number;
     salaryTo: number;
@@ -44,6 +46,12 @@ interface iAppProps {
 
 export function JobCard({ job }: iAppProps) {
   const [imageError, setImageError] = useState(false);
+  
+  // Ensure job has valid ID
+  if (!job.id) {
+    console.error('JobCard: Missing job ID:', job);
+    return null; // Don't render if no ID
+  }
   
   // Handle both API format (flat fields) and legacy nested format
   const company = job.company || job.companyDetails || {
@@ -79,6 +87,7 @@ export function JobCard({ job }: iAppProps) {
                 className="size-12 rounded-lg"
                 onError={() => setImageError(true)}
                 onLoad={() => setImageError(false)}
+                unoptimized={true}
               />
             ) : (
               <div className="bg-red-500 size-12 rounded-lg flex items-center justify-center">
@@ -124,7 +133,34 @@ export function JobCard({ job }: iAppProps) {
           </div>
           <div className="!mt-5">
             <p className="text-base text-muted-foreground line-clamp-2">
-              {company.about || "No description available"}
+              {(() => {
+                const description = job.job_description || job.jobDescription;
+                if (!description) return "No description available";
+                
+                // Try to parse JSON and extract text content
+                try {
+                  const parsed = JSON.parse(description);
+                  if (parsed?.content && Array.isArray(parsed.content)) {
+                    // Extract text from TipTap JSON format
+                    return parsed.content
+                      .map((node: any) => {
+                        if (node.type === 'paragraph' && node.content) {
+                          return node.content
+                            .filter((item: any) => item.type === 'text')
+                            .map((item: any) => item.text)
+                            .join('');
+                        }
+                        return '';
+                      })
+                      .join(' ')
+                      .trim() || "No description available";
+                  }
+                } catch (e) {
+                  // If not JSON, return as plain text
+                  return description;
+                }
+                return "No description available";
+              })()}
             </p>
           </div>
         </CardHeader>

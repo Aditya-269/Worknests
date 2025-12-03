@@ -13,17 +13,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { ChevronDown, Heart, Layers2, LogOut } from "lucide-react";
+import { ChevronDown, Heart, Layers2, LogOut, FileText, Users } from "lucide-react";
 import Link from "next/link";
 
 interface iAppProps {
   email: string;
   name: string;
   image: string;
+  mobile?: boolean;
 }
 
-export function UserDropdown({ email, name, image }: iAppProps) {
-  const { logout } = useAuth();
+export function UserDropdown({ email, name, image, mobile }: iAppProps) {
+  const { logout, user } = useAuth();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -70,9 +71,34 @@ export function UserDropdown({ email, name, image }: iAppProps) {
                 className="opacity-60"
                 aria-hidden="true"
               />
-              <span>My Job Listings</span>
+              <span>{user?.user_type === "COMPANY" ? "My Jobs" : "My Job Listings"}</span>
             </Link>
           </DropdownMenuItem>
+          {user?.user_type === "COMPANY" ? (
+            <DropdownMenuItem asChild>
+              <Link href="/my-jobs/applications">
+                <Users
+                  size={16}
+                  strokeWidth={2}
+                  className="opacity-60"
+                  aria-hidden="true"
+                />
+                <span>Applications</span>
+              </Link>
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem asChild>
+              <Link href="/my-applications">
+                <FileText
+                  size={16}
+                  strokeWidth={2}
+                  className="opacity-60"
+                  aria-hidden="true"
+                />
+                <span>My Applications</span>
+              </Link>
+            </DropdownMenuItem>
+          )}
         </DropdownMenuGroup>
 
         <DropdownMenuSeparator />

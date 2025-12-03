@@ -1,12 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/app/utils/stripe';
+import { jobListingDurationPricing } from '@/app/utils/pricingTiers';
 
 export async function POST(request: NextRequest) {
   try {
-    const { jobId } = await request.json();
+    const { jobId, listingDuration } = await request.json();
 
     if (!jobId) {
       return NextResponse.json({ error: 'Job ID is required' }, { status: 400 });
+    }
+
+    if (!listingDuration) {
+      return NextResponse.json({ error: 'Listing duration is required' }, { status: 400 });
+    }
+
+    // Find the pricing for this duration
+    const pricingTier = jobListingDurationPricing.find(tier => tier.days === listingDuration);
+    if (!pricingTier) {
+      return NextResponse.json({ error: 'Invalid listing duration' }, { status: 400 });
     }
 
     // Create Stripe checkout session
@@ -18,9 +29,9 @@ export async function POST(request: NextRequest) {
             currency: 'usd',
             product_data: {
               name: 'Premium Job Posting',
-              description: '30-day featured job listing with priority placement',
+              description: `${pricingTier.days}-day ${pricingTier.description.toLowerCase()} job listing`,
             },
-            unit_amount: 2999, // $29.99 in cents
+            unit_amount: pricingTier.price * 100, // Convert dollars to cents
           },
           quantity: 1,
         },

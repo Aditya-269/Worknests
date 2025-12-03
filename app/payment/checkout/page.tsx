@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import { useAuth } from "@/app/utils/auth-context";
 import { saveAuthState } from "@/app/utils/auth-persistence";
 import { debugStorage } from "@/app/utils/storage-debug";
+import { jobListingDurationPricing } from "@/app/utils/pricingTiers";
+import { apiClient } from "@/app/utils/api-client";
 
 const CheckoutPage = () => {
   const searchParams = useSearchParams();
@@ -17,6 +19,8 @@ const CheckoutPage = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
   
   const [isProcessing, setIsProcessing] = useState(false);
+  const [jobDetails, setJobDetails] = useState<any>(null);
+  const [loadingJob, setLoadingJob] = useState(true);
 
   useEffect(() => {
     if (!jobId) {
@@ -45,9 +49,35 @@ const CheckoutPage = () => {
     console.log('Checkout page loaded - User:', user?.email, 'JobId:', jobId);
   }, [jobId, router, isAuthenticated, user, isLoading]);
 
+  // Fetch job details
+  useEffect(() => {
+    const fetchJobDetails = async () => {
+      if (!jobId || !isAuthenticated) return;
+      
+      try {
+        setLoadingJob(true);
+        const job = await apiClient.get(`/api/jobs/${jobId}/`);
+        setJobDetails(job);
+      } catch (error: any) {
+        console.error('Error fetching job details:', error);
+        toast.error('Failed to load job details');
+        router.push('/post-job');
+      } finally {
+        setLoadingJob(false);
+      }
+    };
+
+    fetchJobDetails();
+  }, [jobId, isAuthenticated, router]);
+
   const handleStripeCheckout = async () => {
     if (!isAuthenticated || !user) {
       toast.error("Please log in to continue with payment");
+      return;
+    }
+
+    if (!jobDetails) {
+      toast.error("Job details not loaded yet");
       return;
     }
 
@@ -64,7 +94,10 @@ const CheckoutPage = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ jobId }),
+        body: JSON.stringify({ 
+          jobId,
+          listingDuration: jobDetails.listing_duration 
+        }),
       });
 
       const data = await response.json();
@@ -112,8 +145,21 @@ const CheckoutPage = () => {
     }
   };
 
+  // Calculate price based on job details
+  const getPricingInfo = () => {
+    if (!jobDetails) return { price: 0, days: 0, description: '' };
+    
+    const pricingTier = jobListingDurationPricing.find(
+      tier => tier.days === jobDetails.listing_duration
+    );
+    
+    return pricingTier || { price: 0, days: 0, description: '' };
+  };
+
+  const pricingInfo = getPricingInfo();
+
   // Show loading while auth is being checked
-  if (isLoading || !jobId) {
+  if (isLoading || !jobId || loadingJob) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -167,14 +213,14 @@ const CheckoutPage = () => {
                 Premium Job Posting
               </CardTitle>
               <CardDescription>
-                Get maximum visibility with featured placement and priority listing
+                {pricingInfo.description} - Get maximum visibility with featured placement and priority listing
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="font-medium">30-day job listing</span>
-                  <span className="text-2xl font-bold">$29.99</span>
+                  <span className="font-medium">{pricingInfo.days}-day job listing</span>
+                  <span className="text-2xl font-bold">${pricingInfo.price}</span>
                 </div>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li>✓ Featured placement in search results</li>

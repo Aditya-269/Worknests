@@ -31,6 +31,7 @@ class JobPost(models.Model):
         default=JobPostStatus.DRAFT
     )
     applications = models.PositiveIntegerField(default=0)
+    payment_session_id = models.CharField(max_length=255, blank=True, null=True)  # Stripe session ID
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -58,3 +59,28 @@ class SavedJobPost(models.Model):
     class Meta:
         unique_together = ('user', 'job')
         ordering = ['-created_at']
+
+
+class JobApplication(models.Model):
+    """Model for job applications submitted by job seekers"""
+    
+    class ApplicationStatus(models.TextChoices):
+        PENDING = 'pending', 'Pending'
+        REVIEWED = 'reviewed', 'Reviewed'
+        ACCEPTED = 'accepted', 'Accepted'
+        REJECTED = 'rejected', 'Rejected'
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='job_applications')
+    job = models.ForeignKey(JobPost, on_delete=models.CASCADE, related_name='job_applications')
+    status = models.CharField(max_length=20, choices=ApplicationStatus.choices, default=ApplicationStatus.PENDING)
+    cover_letter = models.TextField(blank=True, help_text="Optional cover letter")
+    applied_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ('user', 'job')
+        ordering = ['-applied_at']
+        
+    def __str__(self):
+        return f"{self.user.email} applied to {self.job.job_title}"

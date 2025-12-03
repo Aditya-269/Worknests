@@ -1,6 +1,7 @@
 // getJobPost removed - using direct server-side fetch instead
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ApplyButton } from "@/components/general/ApplyButton";
 import { Card } from "@/components/ui/card";
 
 import { notFound } from "next/navigation";
@@ -20,7 +21,7 @@ import { JsonToHtml } from "@/components/general/JsonToHtml";
 async function getJob(jobId: string, userId?: string) {
   try {
     // Direct server-side fetch to Django API
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8001';
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
     const response = await fetch(`${backendUrl}/api/jobs/${jobId}/`, {
       method: 'GET',
       headers: {
@@ -131,12 +132,7 @@ const JobIdPage = async ({ params }: { params: Params }) => {
           </section>
 
           <section>
-            <h3 className="font-semibold mb-4">
-              Benefits{" "}
-              <span className="text-sm text-muted-foreground font-normal">
-                (green is offered and red is not offered)
-              </span>
-            </h3>
+            <h3 className="font-semibold mb-4">Benefits</h3>
             <div className="flex flex-wrap gap-3">
               {benefits.map((benefit) => {
                 const isOffered = jobData.benefits.includes(benefit.id);
@@ -174,9 +170,13 @@ const JobIdPage = async ({ params }: { params: Params }) => {
                 </p>
               </div>
               <div>
-                <Button className="w-full">
-                  Apply now
-                </Button>
+                <ApplyButton 
+                  jobId={jobId}
+                  jobTitle={jobData.jobTitle}
+                  companyName={jobData.company.name}
+                  isAuthenticated={!!session?.user}
+                  userType={session?.user?.user_type}
+                />
               </div>
             </div>
           </Card>
@@ -243,6 +243,7 @@ const JobIdPage = async ({ params }: { params: Params }) => {
                   width={48}
                   height={48}
                   className="rounded-full size-12"
+                  unoptimized={true}
                 />
                 <div>
                   <h3 className="font-semibold">{jobData.company.name}</h3>

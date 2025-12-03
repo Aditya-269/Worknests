@@ -72,7 +72,7 @@ export default function JobListings({
       {jobs.length > 0 ? (
         <div className="flex flex-col gap-6">
           {jobs.map((job, index) => (
-            <JobCard job={job} key={index} />
+            <JobCard job={job} key={job.id || index} />
           ))}
         </div>
       ) : (

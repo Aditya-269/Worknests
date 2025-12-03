@@ -2,11 +2,13 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
+    domains: ["utfs.io"], // Legacy domains config for compatibility
     remotePatterns: [
       {
         protocol: "https",
         hostname: "utfs.io",
         port: "",
+        pathname: "/**",
       },
       {
         protocol: "https",

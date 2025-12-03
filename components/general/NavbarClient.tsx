@@ -43,7 +43,7 @@ export function NavbarClient({ mobile = false }: NavbarClientProps) {
         <SheetContent>
           <SheetHeader className="text-left">
             <SheetTitle>
-              Job<span className="text-primary">Marshal</span>
+              Work<span className="text-primary">Nest</span>
             </SheetTitle>
             <SheetDescription>
               Welcome, {user.name}
@@ -71,6 +71,22 @@ export function NavbarClient({ mobile = false }: NavbarClientProps) {
             >
               {user.user_type === "COMPANY" ? "My Jobs" : "Saved Jobs"}
             </Link>
+            {user.user_type === "COMPANY" && (
+              <Link
+                href="/my-jobs/applications"
+                className="text-lg px-4 py-2 rounded-md bg-secondary hover:bg-secondary/80 transition-colors duration-200"
+              >
+                Applications
+              </Link>
+            )}
+            {user.user_type === "JOB_SEEKER" && (
+              <Link
+                href="/my-applications"
+                className="text-lg px-4 py-2 rounded-md bg-secondary hover:bg-secondary/80 transition-colors duration-200"
+              >
+                My Applications
+              </Link>
+            )}
             <UserDropdown
               email={user.email}
               name={user.name}
@@ -90,7 +106,7 @@ export function NavbarClient({ mobile = false }: NavbarClientProps) {
         <SheetContent>
           <SheetHeader className="text-left">
             <SheetTitle>
-              Job<span className="text-primary">Marshal</span>
+              Work<span className="text-primary">Nest</span>
             </SheetTitle>
             <SheetDescription>
               Find or post your next job opportunity
@@ -123,6 +139,12 @@ export function NavbarClient({ mobile = false }: NavbarClientProps) {
       {user.user_type === "COMPANY" && (
         <Link href="/post-job" className={buttonVariants({ size: "lg" })}>
           Post Job
+        </Link>
+      )}
+      {/* Applications link for job seekers */}
+      {user.user_type === "JOB_SEEKER" && (
+        <Link href="/my-applications" className={buttonVariants({ variant: "outline", size: "lg" })}>
+          My Applications
         </Link>
       )}
       <UserDropdown

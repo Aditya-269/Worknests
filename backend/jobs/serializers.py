@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from accounts.serializers import UserSerializer, CompanySerializer
-from .models import JobPost, SavedJobPost
+from .models import JobPost, SavedJobPost, JobApplication
 
 
 class JobPostSerializer(serializers.ModelSerializer):
@@ -14,7 +14,7 @@ class JobPostSerializer(serializers.ModelSerializer):
             'id', 'job_title', 'employment_type', 'location',
             'salary_from', 'salary_to', 'job_description',
             'listing_duration', 'benefits', 'status', 'applications',
-            'company', 'company_details', 'created_at', 'updated_at'
+            'payment_session_id', 'company', 'company_details', 'created_at', 'updated_at'
         )
         read_only_fields = ('id', 'company', 'applications', 'created_at', 'updated_at')
     
@@ -39,7 +39,7 @@ class JobPostListSerializer(serializers.ModelSerializer):
         model = JobPost
         fields = (
             'id', 'job_title', 'employment_type', 'location',
-            'salary_from', 'salary_to', 'listing_duration',
+            'salary_from', 'salary_to', 'job_description', 'listing_duration',
             'benefits', 'status', 'applications',
             'company_name', 'company_logo', 'is_saved',
             'created_at'
@@ -62,6 +62,28 @@ class SavedJobPostSerializer(serializers.ModelSerializer):
         model = SavedJobPost
         fields = ('id', 'job', 'job_details', 'created_at')
         read_only_fields = ('id', 'created_at')
+    
+    def create(self, validated_data):
+        validated_data['user'] = self.context['request'].user
+        return super().create(validated_data)
+
+
+class JobApplicationSerializer(serializers.ModelSerializer):
+    """Serializer for job applications"""
+    
+    user_email = serializers.CharField(source='user.email', read_only=True)
+    user_name = serializers.CharField(source='user.jobseeker_profile.name', read_only=True)
+    user_resume = serializers.CharField(source='user.jobseeker_profile.resume', read_only=True)
+    job_title = serializers.CharField(source='job.job_title', read_only=True)
+    company_name = serializers.CharField(source='job.company.name', read_only=True)
+    
+    class Meta:
+        model = JobApplication
+        fields = (
+            'id', 'job', 'status', 'cover_letter', 'applied_at', 'updated_at',
+            'user_email', 'user_name', 'user_resume', 'job_title', 'company_name'
+        )
+        read_only_fields = ('id', 'job', 'applied_at', 'updated_at')
     
     def create(self, validated_data):
         validated_data['user'] = self.context['request'].user
