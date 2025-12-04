@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backend-github-production-1bc7.up.railway.app';
 
 export interface ApiError {
   message: string;
@@ -28,7 +28,7 @@ export class ApiClient {
     };
 
     if (this.accessToken) {
-      headers.Authorization = `Bearer ${this.accessToken}`;
+      (headers as any).Authorization = `Bearer ${this.accessToken}`;
     }
 
     const config: RequestInit = {
@@ -131,7 +131,7 @@ export class ApiClient {
     };
 
     if (this.accessToken) {
-      headers.Authorization = `Bearer ${this.accessToken}`;
+      (headers as any).Authorization = `Bearer ${this.accessToken}`;
     }
 
     const response = await fetch(url, {

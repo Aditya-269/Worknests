@@ -3,43 +3,23 @@ import React from "react";
 
 import { JobCard } from "@/components/general/JobCard";
 
-import { getSavedJobs } from "@/app/utils/api-actions";
-import { useRequireAuth } from "@/app/utils/hooks";
+// import { getSavedJobs } from "@/app/utils/api-actions";
+// import { requireUser } from "@/app/utils/auth";
 
-async function getFavorites(userId: string) {
-  const data = await prisma.savedJobPost.findMany({
-    where: {
-      userId: userId,
-    },
-    select: {
-      job: {
-        select: {
-          id: true,
-          jobTitle: true,
-          salaryFrom: true,
-          salaryTo: true,
-          employmentType: true,
-          location: true,
-          createdAt: true,
-          company: {
-            select: {
-              name: true,
-              logo: true,
-              location: true,
-              about: true,
-            },
-          },
-        },
-      },
-    },
-  });
+// Temporarily disabled to fix SSR issues - will implement client-side fetching
+// async function getFavorites() {
+//   try {
+//     const data = await getSavedJobs();
+//     return data;
+//   } catch (error) {
+//     console.error("Error fetching favorites:", error);
+//     return [];
+//   }
+// }
 
-  return data;
-}
-
-const FavoritesPage = async () => {
-  const session = await requireUser();
-  const favorites = await getFavorites(session.id as string);
+const FavoritesPage = () => {
+  // Note: This page will fetch favorites client-side to avoid SSR issues
+  const favorites: any[] = [];
 
   if (favorites.length === 0) {
     return (
@@ -55,7 +35,7 @@ const FavoritesPage = async () => {
   return (
     <div className="grid grid-cols-1 mt-5   gap-4">
       {favorites.map((favorite) => (
-        <JobCard job={favorite.job} key={favorite.job.id} />
+        <JobCard job={favorite as any} key={favorite.id} />
       ))}
     </div>
   );

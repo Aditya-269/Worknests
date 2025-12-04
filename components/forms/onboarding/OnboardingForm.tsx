@@ -5,8 +5,6 @@ import { useState } from "react";
 
 import CompanyForm from "./CompanyForm";
 
-import Image from "next/image";
-import Logo from "@/public/logo.png";
 import UserTypeSelection from "./UserTypeSelection";
 import JobSeekerForm from "./JobSeekerForm";
 
@@ -35,7 +33,6 @@ export default function OnboardingForm() {
   return (
     <>
       <div className="flex items-center gap-3 mb-10">
-        <Image src={Logo} alt="Work Nest Logo" width={50} height={50} />
         <span className="text-4xl font-bold">
           Work<span className="text-primary">Nest</span>
         </span>

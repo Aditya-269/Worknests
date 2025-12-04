@@ -175,7 +175,7 @@ const JobIdPage = async ({ params }: { params: Params }) => {
                   jobTitle={jobData.jobTitle}
                   companyName={jobData.company.name}
                   isAuthenticated={!!session?.user}
-                  userType={session?.user?.user_type}
+                  userType={(session?.user as any)?.user_type}
                 />
               </div>
             </div>

@@ -128,11 +128,11 @@ const MyJobs = () => {
                     </TableCell>
                     <TableCell>{listing.applications || 0}</TableCell>
                     <TableCell>
-                      {new Date(listing.createdAt).toLocaleDateString("en-US", {
+                      {listing.createdAt ? new Date(listing.createdAt).toLocaleDateString("en-US", {
                         month: "long",
-                        day: "numeric",
+                        day: "numeric", 
                         year: "numeric",
-                      })}
+                      }) : 'N/A'}
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>

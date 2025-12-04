@@ -4,6 +4,17 @@ import { jobListingDurationPricing } from '@/app/utils/pricingTiers';
 
 export async function POST(request: NextRequest) {
   try {
+    // Check for required environment variables
+    if (!process.env.STRIPE_SECRET_KEY) {
+      console.error('STRIPE_SECRET_KEY is not set');
+      return NextResponse.json({ error: 'Stripe configuration missing' }, { status: 500 });
+    }
+
+    if (!process.env.NEXT_PUBLIC_APP_URL) {
+      console.error('NEXT_PUBLIC_APP_URL is not set');
+      return NextResponse.json({ error: 'App URL configuration missing' }, { status: 500 });
+    }
+
     const { jobId, listingDuration } = await request.json();
 
     if (!jobId) {

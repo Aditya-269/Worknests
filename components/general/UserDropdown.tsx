@@ -44,7 +44,7 @@ export function UserDropdown({ email, name, image, mobile }: iAppProps) {
       <DropdownMenuContent className="w-48" align="end">
         <DropdownMenuLabel className="flex min-w-0 flex-col">
           <span className="truncate text-sm font-medium text-foreground">
-            {name}
+            {user?.user_type === "COMPANY" && user?.company_name ? user.company_name : name}
           </span>
           <span className="truncate text-xs font-normal text-muted-foreground">
             {email}
@@ -102,19 +102,17 @@ export function UserDropdown({ email, name, image, mobile }: iAppProps) {
         </DropdownMenuGroup>
 
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <button 
-            onClick={() => logout()}
-            className="w-full flex items-center gap-2"
-          >
-            <LogOut
-              size={16}
-              strokeWidth={2}
-              className="opacity-60"
-              aria-hidden="true"
-            />
-            <span>Logout</span>
-          </button>
+        <DropdownMenuItem 
+          onClick={() => logout()}
+          className="cursor-pointer"
+        >
+          <LogOut
+            size={16}
+            strokeWidth={2}
+            className="opacity-60"
+            aria-hidden="true"
+          />
+          <span>Logout</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

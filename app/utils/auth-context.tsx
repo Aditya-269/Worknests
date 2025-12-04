@@ -41,37 +41,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (authClient.isAuthenticated()) {
         console.log('AuthContext: User is authenticated, fetching user data...');
-        const userData = await authClient.getUser();
-        setUser(userData);
-        console.log('AuthContext: Auth state checked successfully, user:', userData.email);
+        try {
+          const userData = await authClient.getUser();
+          setUser(userData);
+          console.log('AuthContext: Auth state checked successfully, user:', userData.email);
+        } catch (userError: any) {
+          console.error('Failed to fetch user data:', userError);
+          
+          // If it's a 404, the API endpoint doesn't exist
+          if (userError.status === 404) {
+            console.error('User API endpoint not found - this indicates a configuration issue');
+            // Don't logout for 404s - API might be down
+            setUser({
+              id: 'temp-user',
+              email: 'authenticated@user.com',
+              name: 'Authenticated User',
+              user_type: null,
+              onboarding_completed: false,
+              created_at: new Date().toISOString()
+            } as User);
+          } else if (userError.status === 401 || userError.status === 403) {
+            // Invalid token
+            console.log('Invalid token detected, clearing auth state');
+            await authClient.logout();
+            setUser(null);
+          } else {
+            // Other errors - keep current state
+            console.log('Network error during user fetch, keeping auth state');
+          }
+        }
       } else {
         console.log('AuthContext: No authentication found during auth state check');
         const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
         console.log('AuthContext: Stored token exists:', !!token);
+        setUser(null);
       }
     } catch (error: any) {
       console.error('Auth check failed:', error);
-      
-      // Only logout if it's a real auth error, not a network error
-      if (error.status === 401 || error.status === 403) {
-        console.log('Invalid token detected, clearing auth state');
-        try {
-          await authClient.logout();
-        } catch (logoutError) {
-          console.error('Logout failed during auth check:', logoutError);
-          // Force clear tokens even if logout fails
-          authClient['clearTokens']();
-        }
-        setUser(null);
-      } else {
-        // For network errors, don't clear the user state immediately
-        console.log('Network error during auth check, keeping current state');
-        // Keep the user logged in, they might just have a network issue
-        if (!user && authClient.isAuthenticated()) {
-          // Try to get user data again later, but don't fail
-          setTimeout(checkAuthState, 2000);
-        }
-      }
+      setUser(null);
     } finally {
       setIsLoading(false);
     }

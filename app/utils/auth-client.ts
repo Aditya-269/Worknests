@@ -9,6 +9,7 @@ export interface User {
   user_type: 'COMPANY' | 'JOB_SEEKER' | null;
   onboarding_completed: boolean;
   created_at: string;
+  company_name?: string; // Company name for company users
   image?: string; // For compatibility with existing components
 }
 

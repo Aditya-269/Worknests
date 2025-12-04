@@ -33,3 +33,10 @@ export const jobSchema = z.object({
   companyDescription: z.string().min(1, "Company description is required"),
   listingDuration: z.number().min(1, "Listing duration is required"),
 });
+
+// Export the inferred TypeScript type
+export type JobPost = z.infer<typeof jobSchema> & {
+  id: string;
+  createdAt?: string;
+  applications?: number;
+};

@@ -1,0 +1,15 @@
+# Ignore backend directory and files
+backend/
+Dockerfile
+nixpacks.toml
+.railwayignore
+
+# Ignore development files
+.env.local
+.env.development
+.next/
+node_modules/
+
+# Ignore other build artifacts
+*.log
+.DS_Store

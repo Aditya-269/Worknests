@@ -1,8 +1,6 @@
 import Link from "next/link";
 
 import { Button, buttonVariants } from "../ui/button";
-import Image from "next/image";
-import Logo from "@/public/logo.png";
 
 import { Menu } from "lucide-react";
 import {
@@ -22,7 +20,6 @@ export async function Navbar() {
   return (
     <nav className="flex justify-between items-center py-5">
       <Link href="/" className="flex items-center gap-2">
-        <Image src={Logo} alt="Work Nest Logo" width={40} height={40} />
         <h1 className="text-2xl font-bold">
           Work<span className="text-primary">Nest</span>
         </h1>

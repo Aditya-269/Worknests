@@ -46,7 +46,7 @@ export function NavbarClient({ mobile = false }: NavbarClientProps) {
               Work<span className="text-primary">Nest</span>
             </SheetTitle>
             <SheetDescription>
-              Welcome, {user.name}
+              Welcome, {user.user_type === "COMPANY" && user.company_name ? user.company_name : user.name}
             </SheetDescription>
           </SheetHeader>
 

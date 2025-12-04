@@ -3,7 +3,7 @@
 import { EmptyState } from "./EmptyState";
 import { PaginationComponent } from "./PaginationComponent";
 import { JobCard } from "./JobCard";
-import { getJobPosts } from "@/app/utils/api-actions";
+import { getJobPosts, JobPost } from "@/app/utils/api-actions";
 import { useState, useEffect } from "react";
 
 // Convert to client-side data fetching
@@ -13,7 +13,7 @@ function useJobs(
   jobTypes: string[] = [],
   location: string = ""
 ) {
-  const [jobs, setJobs] = useState([]);
+  const [jobs, setJobs] = useState<JobPost[]>([]);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
 
@@ -72,7 +72,7 @@ export default function JobListings({
       {jobs.length > 0 ? (
         <div className="flex flex-col gap-6">
           {jobs.map((job, index) => (
-            <JobCard job={job} key={job.id || index} />
+            <JobCard job={job as any} key={job.id || index} />
           ))}
         </div>
       ) : (

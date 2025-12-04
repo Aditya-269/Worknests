@@ -193,7 +193,7 @@ export default function CompanyApplicationsPage() {
 
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">
-                      Applied {formatRelativeTime(application.applied_at)}
+                      Applied {formatRelativeTime(new Date(application.applied_at))}
                     </span>
                     
                     <div className="flex items-center gap-3">

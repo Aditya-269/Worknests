@@ -200,7 +200,7 @@ export default function MyApplicationsPage() {
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
                       <Clock className="h-4 w-4" />
-                      Applied {formatRelativeTime(application.applied_at)}
+                      Applied {formatRelativeTime(new Date(application.applied_at))}
                     </div>
                     
                     <Button variant="outline" asChild>

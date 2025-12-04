@@ -36,7 +36,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         validated_data.pop('confirm_password')
         
         user = CustomUser.objects.create_user(
-            username=validated_data['email'],
+            username=validated_data['email'],  # Use email as username
             email=validated_data['email'],
             name=validated_data.get('name', ''),
             password=validated_data['password']
@@ -75,14 +75,21 @@ class UserLoginSerializer(serializers.Serializer):
 
 class UserSerializer(serializers.ModelSerializer):
     """Serializer for user profile"""
+    company_name = serializers.SerializerMethodField()
     
     class Meta:
         model = CustomUser
         fields = (
             'id', 'email', 'name', 'user_type', 
-            'onboarding_completed', 'created_at'
+            'onboarding_completed', 'created_at', 'company_name'
         )
-        read_only_fields = ('id', 'created_at')
+        read_only_fields = ('id', 'created_at', 'company_name')
+    
+    def get_company_name(self, obj):
+        """Get company name if user is a company"""
+        if obj.user_type == CustomUser.UserType.COMPANY and hasattr(obj, 'company_profile'):
+            return obj.company_profile.name
+        return None
 
 
 class CompanySerializer(serializers.ModelSerializer):

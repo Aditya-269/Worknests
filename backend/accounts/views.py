@@ -27,33 +27,46 @@ class UserRegistrationView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
     
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        
-        # Generate JWT tokens
-        refresh = RefreshToken.for_user(user)
-        access_token = refresh.access_token
-        
-        # Prepare response
-        response_data = {
-            'access_token': str(access_token),
-            'user': UserSerializer(user).data
-        }
-        
-        # Create response and set refresh token as httpOnly cookie
-        response = Response(response_data, status=status.HTTP_201_CREATED)
-        response.set_cookie(
-            settings.SIMPLE_JWT_COOKIE_NAME,
-            str(refresh),
-            max_age=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds(),
-            httponly=settings.SIMPLE_JWT_COOKIE_HTTP_ONLY,
-            secure=settings.SIMPLE_JWT_COOKIE_SECURE,
-            samesite=settings.SIMPLE_JWT_COOKIE_SAMESITE,
-            domain=settings.SIMPLE_JWT_COOKIE_DOMAIN,
-        )
-        
-        return response
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            user = serializer.save()
+            
+            # Generate JWT tokens
+            refresh = RefreshToken.for_user(user)
+            access_token = refresh.access_token
+            
+            # Prepare response
+            response_data = {
+                'access_token': str(access_token),
+                'user': UserSerializer(user).data
+            }
+            
+            # Create response and set refresh token as httpOnly cookie
+            response = Response(response_data, status=status.HTTP_201_CREATED)
+            response.set_cookie(
+                settings.SIMPLE_JWT_COOKIE_NAME,
+                str(refresh),
+                max_age=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds(),
+                httponly=settings.SIMPLE_JWT_COOKIE_HTTP_ONLY,
+                secure=settings.SIMPLE_JWT_COOKIE_SECURE,
+                samesite=settings.SIMPLE_JWT_COOKIE_SAMESITE,
+                domain=settings.SIMPLE_JWT_COOKIE_DOMAIN,
+            )
+            
+            return response
+            
+        except Exception as e:
+            # Log the error for debugging
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"User registration error: {str(e)}")
+            
+            # Return a more descriptive error
+            return Response(
+                {'error': f'Registration failed: {str(e)}'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class UserLoginView(generics.GenericAPIView):

@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, CreditCard, CheckCircle } from "lucide-react";
@@ -12,7 +12,7 @@ import { debugStorage } from "@/app/utils/storage-debug";
 import { jobListingDurationPricing } from "@/app/utils/pricingTiers";
 import { apiClient } from "@/app/utils/api-client";
 
-const CheckoutPage = () => {
+const CheckoutPageContent = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const jobId = searchParams.get("jobId");
@@ -42,6 +42,8 @@ const CheckoutPage = () => {
       router.push(`/login?redirect=/payment/checkout?jobId=${jobId}`);
       return;
     }
+    
+    console.log('User authenticated for payment:', user.email);
     
     // Debug storage state
     debugStorage();
@@ -282,6 +284,14 @@ const CheckoutPage = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+const CheckoutPage = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CheckoutPageContent />
+    </Suspense>
   );
 };
 

@@ -71,7 +71,7 @@ const PostJobPage = () => {
 
   // Empty company data - user needs to fill all fields
   const data = {
-    name: user.name || "",
+    name: user.company_name || user.name || "",
     about: "",
     location: "",
     logo: "",

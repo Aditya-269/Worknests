@@ -28,7 +28,7 @@ class CustomUser(AbstractUser):
     
     # Use email as the username field
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']  # Keep username as required for Django admin
+    REQUIRED_FIELDS = []  # No additional required fields since email is the USERNAME_FIELD
     
     def __str__(self):
         return self.email

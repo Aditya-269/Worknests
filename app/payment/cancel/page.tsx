@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { XIcon } from "lucide-react";
 import Link from "next/link";
-import React from "react";
+import React, { Suspense } from "react";
 
-const CancelledPage = () => {
+const CancelledPageContent = () => {
   const searchParams = useSearchParams();
   const jobId = searchParams.get("job_id");
 
@@ -42,6 +42,14 @@ const CancelledPage = () => {
         </div>
       </Card>
     </div>
+  );
+};
+
+const CancelledPage = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CancelledPageContent />
+    </Suspense>
   );
 };
 

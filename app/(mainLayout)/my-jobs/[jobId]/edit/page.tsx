@@ -49,7 +49,7 @@ const EditJobPage = ({ params }: { params: Params }) => {
 
   return (
     <>
-      <EditJobForm jobPost={jobPost} />
+      <EditJobForm jobPost={jobPost as any} />
     </>
   );
 };

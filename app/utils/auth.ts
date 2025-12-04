@@ -39,3 +39,12 @@ export async function requireAuth(): Promise<AuthSession> {
   
   return session;
 }
+
+/**
+ * Alias for requireAuth - returns just the user object
+ * Used in pages that need authenticated user data
+ */
+export async function requireUser() {
+  const session = await requireAuth();
+  return session.user;
+}

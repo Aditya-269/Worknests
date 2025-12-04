@@ -87,7 +87,16 @@ export async function createCompany(data: CompanyData): Promise<void> {
   } catch (error: any) {
     if (error.status === 401) {
       await authClient.refreshToken();
-      await apiClient.post('/api/auth/create-company/', apiData);
+      // Re-create apiData for retry
+      const retryApiData = {
+        name: data.name,
+        location: data.location,
+        website: data.website,
+        x_account: data.xAccount,
+        about: data.about,
+        logo: data.logo
+      };
+      await apiClient.post('/api/auth/create-company/', retryApiData);
       await authClient.completeOnboarding();
     } else {
       throw error;
@@ -153,7 +162,18 @@ export async function createJob(data: JobData): Promise<string> {
     if (error.status === 401) {
       console.log("Attempting token refresh...");
       await authClient.refreshToken();
-      const response = await apiClient.post<JobPost>('/api/jobs/', apiData);
+      // Re-create apiData for retry
+      const retryApiData = {
+        job_title: data.jobTitle,
+        employment_type: data.employmentType,
+        location: data.location,
+        salary_from: data.salaryFrom,
+        salary_to: data.salaryTo,
+        job_description: data.jobDescription,
+        listing_duration: data.listingDuration,
+        benefits: data.benefits
+      };
+      const response = await apiClient.post<JobPost>('/api/jobs/', retryApiData);
       console.log("Retry API response:", response);
       
       if (!response || !response.id) {
@@ -185,7 +205,18 @@ export async function updateJobPost(data: JobData, jobId: string): Promise<void>
   } catch (error: any) {
     if (error.status === 401) {
       await authClient.refreshToken();
-      await apiClient.put(`/api/jobs/${jobId}/`, apiData);
+      // Re-create apiData for retry
+      const retryApiData = {
+        job_title: data.jobTitle,
+        employment_type: data.employmentType,
+        location: data.location,
+        salary_from: data.salaryFrom,
+        salary_to: data.salaryTo,
+        job_description: data.jobDescription,
+        listing_duration: data.listingDuration,
+        benefits: data.benefits
+      };
+      await apiClient.put(`/api/jobs/${jobId}/`, retryApiData);
     } else {
       throw error;
     }
@@ -278,7 +309,7 @@ export async function getJobPosts(params?: {
     console.log('Fetching jobs from:', url);
     
     // Use direct fetch for public endpoints to avoid auth issues
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8001';
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://backend-github-production-1bc7.up.railway.app';
     const fullUrl = `${backendUrl}${url}`;
     console.log('Full URL:', fullUrl);
     
