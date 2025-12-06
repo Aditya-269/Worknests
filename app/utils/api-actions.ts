@@ -375,7 +375,7 @@ export async function getSavedJobs(): Promise<JobPost[]> {
       }
       
       return transformJobPost(jobDetails);
-    }).filter(Boolean) || [];
+    }).filter((job): job is JobPost => job !== null) || [];
     
     console.log('Transformed saved jobs:', savedJobs);
     return savedJobs;
@@ -392,7 +392,7 @@ export async function getSavedJobs(): Promise<JobPost[]> {
           return null;
         }
         return transformJobPost(jobDetails);
-      }).filter(Boolean) || [];
+      }).filter((job): job is JobPost => job !== null) || [];
       
       return savedJobs;
     } else {
