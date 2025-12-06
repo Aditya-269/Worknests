@@ -29,12 +29,16 @@ export function SaveJobButton({
     
     setIsLoading(true);
     try {
-      await saveJobPost(jobId);
-      setIsSaved(!isSaved);
-      
       if (!isSaved) {
+        // Save the job
+        await saveJobPost(jobId);
+        setIsSaved(true);
         toast.success(`Saved ${jobTitle} at ${companyName}!`);
       } else {
+        // Unsave the job - we'll need to call the save endpoint again to toggle
+        // The Django API should handle toggling automatically
+        await saveJobPost(jobId);
+        setIsSaved(false);
         toast.success(`Removed ${jobTitle} from saved jobs`);
       }
     } catch (error: any) {
@@ -42,6 +46,10 @@ export function SaveJobButton({
       
       if (error.response?.data?.error) {
         toast.error(error.response.data.error);
+      } else if (error.message?.includes('already saved')) {
+        // If it's already saved, toggle the state
+        setIsSaved(!isSaved);
+        toast.info(isSaved ? 'Job removed from saved jobs' : 'Job saved successfully');
       } else {
         toast.error('Failed to save job. Please try again.');
       }

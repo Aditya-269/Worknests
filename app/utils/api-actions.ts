@@ -361,13 +361,40 @@ export async function getMyJobs(): Promise<JobPost[]> {
 export async function getSavedJobs(): Promise<JobPost[]> {
   try {
     const response = await apiClient.get<{ results: any[] }>('/api/saved-jobs/');
-    // Extract job details from saved job objects
-    return response.results?.map(saved => saved.job_details) || [];
+    console.log('Raw saved jobs response:', response);
+    
+    // Extract job details from saved job objects and transform them
+    const savedJobs = response.results?.map(saved => {
+      const jobDetails = saved.job_details || saved.job || saved;
+      console.log('Processing saved job:', saved, 'Job details:', jobDetails);
+      
+      // Ensure job has an ID
+      if (!jobDetails.id) {
+        console.warn('Saved job missing ID:', jobDetails);
+        return null;
+      }
+      
+      return transformJobPost(jobDetails);
+    }).filter(Boolean) || [];
+    
+    console.log('Transformed saved jobs:', savedJobs);
+    return savedJobs;
   } catch (error: any) {
     if (error.status === 401) {
       await authClient.refreshToken();
       const response = await apiClient.get<{ results: any[] }>('/api/saved-jobs/');
-      return response.results?.map(saved => saved.job_details) || [];
+      console.log('Retry saved jobs response:', response);
+      
+      const savedJobs = response.results?.map(saved => {
+        const jobDetails = saved.job_details || saved.job || saved;
+        if (!jobDetails.id) {
+          console.warn('Saved job missing ID after retry:', jobDetails);
+          return null;
+        }
+        return transformJobPost(jobDetails);
+      }).filter(Boolean) || [];
+      
+      return savedJobs;
     } else {
       throw error;
     }
