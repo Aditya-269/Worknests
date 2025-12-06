@@ -1,26 +1,14 @@
-# Use Python 3.11 slim image
-FROM python:3.11-slim
+FROM python:3.11
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+WORKDIR /app/backend
 
-# Set work directory
-WORKDIR /app
+COPY backend/requirements.txt .
+RUN pip install -r requirements.txt
 
-# Copy backend requirements and install dependencies
-COPY backend/requirements.txt /app/
-RUN pip install --no-cache-dir -r requirements.txt
+COPY backend/ .
 
-# Copy backend code
-COPY backend/ /app/
-
-# Run Django setup commands
-RUN python manage.py migrate --noinput
 RUN python manage.py collectstatic --noinput
 
-# Expose port
-EXPOSE 8000
+EXPOSE $PORT
 
-# Run gunicorn with better logging
-CMD ["gunicorn", "worknest.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--log-level", "debug", "--access-logfile", "-", "--error-logfile", "-"]
+CMD sh -c "python manage.py migrate --verbosity=2 && gunicorn worknest.wsgi --log-file - --bind 0.0.0.0:$PORT"

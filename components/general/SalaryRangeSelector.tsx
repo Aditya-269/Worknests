@@ -31,10 +31,11 @@ export function SalaryRangeSelector({
     control,
   });
 
-  const [range, setRange] = useState<[number, number]>([
-    fromField.value || minSalary,
-    toField.value || maxSalary / 2,
-  ]);
+  const [range, setRange] = useState<[number, number]>(() => {
+    const from = typeof fromField.value === 'number' ? fromField.value : minSalary;
+    const to = typeof toField.value === 'number' ? toField.value : Math.min(maxSalary / 2, maxSalary);
+    return [from, Math.max(to, from + step)];
+  });
 
   const handleRangeChange = (value: number[]) => {
     const newRange: [number, number] = [value[0], value[1]];
@@ -45,8 +46,14 @@ export function SalaryRangeSelector({
 
   // Update range when form values change externally
   useEffect(() => {
-    setRange([fromField.value || minSalary, toField.value || maxSalary / 2]);
-  }, [fromField.value, toField.value, minSalary, maxSalary]);
+    const from = typeof fromField.value === 'number' ? fromField.value : minSalary;
+    const to = typeof toField.value === 'number' ? toField.value : Math.min(maxSalary / 2, maxSalary);
+    const validatedRange: [number, number] = [
+      Math.max(from, minSalary),
+      Math.min(Math.max(to, from + step), maxSalary)
+    ];
+    setRange(validatedRange);
+  }, [fromField.value, toField.value, minSalary, maxSalary, step]);
 
   return (
     <div className="w-full space-y-4">

@@ -2,6 +2,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ApplyButton } from "@/components/general/ApplyButton";
+import { SaveJobButton } from "@/components/general/SaveJobButton";
 import { Card } from "@/components/ui/card";
 
 import { notFound } from "next/navigation";
@@ -84,7 +85,7 @@ const JobIdPage = async ({ params }: { params: Params }) => {
   // }
 
   const session = await auth();
-  const { jobData, savedJob } = await getJob(jobId, session?.user?.id);
+  const { jobData, savedJob } = await getJob(jobId, session?.user?.id || undefined);
   const locationFlag = getFlagEmoji(jobData.location);
 
   return (
@@ -113,10 +114,13 @@ const JobIdPage = async ({ params }: { params: Params }) => {
             </div>
 
             {session?.user ? (
-              <Button variant="outline" className="flex items-center gap-2">
-                <Heart className="size-4" />
-                Save Job
-              </Button>
+              <SaveJobButton
+                jobId={jobId}
+                jobTitle={jobData.jobTitle}
+                companyName={jobData.company.name}
+                isAuthenticated={!!session?.user}
+                initialIsSaved={!!savedJob}
+              />
             ) : (
               <Button variant="outline" asChild>
                 <Link href="/login">

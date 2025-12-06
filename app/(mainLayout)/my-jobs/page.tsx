@@ -33,7 +33,6 @@ import Link from "next/link";
 import { EmptyState } from "@/components/general/EmptyState";
 import { getMyJobs } from "@/app/utils/api-actions";
 import { useRequireCompany } from "@/app/utils/hooks";
-import { CopyLinkMenuItem } from "@/components/general/CopyLink";
 import { JobPost } from "@/app/utils/api-actions";
 
 const MyJobs = () => {
@@ -149,9 +148,6 @@ const MyJobs = () => {
                               Edit Job
                             </Link>
                           </DropdownMenuItem>
-                          <CopyLinkMenuItem
-                            jobUrl={`${process.env.NEXT_PUBLIC_URL}/job/${listing.id}`}
-                          />
                           <DropdownMenuSeparator />
                           <DropdownMenuItem asChild>
                             <Link href={`/my-jobs/${listing.id}/delete`}>
