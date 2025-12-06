@@ -52,28 +52,35 @@ export function UserDropdown({ email, name, image, mobile }: iAppProps) {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem asChild>
-            <Link href="/favorites">
-              <Heart
-                size={16}
-                strokeWidth={2}
-                className="opacity-60"
-                aria-hidden="true"
-              />
-              <span>Saved Jobs</span>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link href="/my-jobs">
-              <Layers2
-                size={16}
-                strokeWidth={2}
-                className="opacity-60"
-                aria-hidden="true"
-              />
-              <span>{user?.user_type === "COMPANY" ? "My Jobs" : "My Job Listings"}</span>
-            </Link>
-          </DropdownMenuItem>
+          {/* Saved Jobs - Only for Job Seekers */}
+          {user?.user_type !== "COMPANY" && (
+            <DropdownMenuItem asChild>
+              <Link href="/favorites">
+                <Heart
+                  size={16}
+                  strokeWidth={2}
+                  className="opacity-60"
+                  aria-hidden="true"
+                />
+                <span>Saved Jobs</span>
+              </Link>
+            </DropdownMenuItem>
+          )}
+          
+          {/* My Jobs - Only for Companies */}
+          {user?.user_type === "COMPANY" && (
+            <DropdownMenuItem asChild>
+              <Link href="/my-jobs">
+                <Layers2
+                  size={16}
+                  strokeWidth={2}
+                  className="opacity-60"
+                  aria-hidden="true"
+                />
+                <span>My Jobs</span>
+              </Link>
+            </DropdownMenuItem>
+          )}
           {user?.user_type === "COMPANY" ? (
             <DropdownMenuItem asChild>
               <Link href="/my-jobs/applications">

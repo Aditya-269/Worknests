@@ -60,13 +60,13 @@ export function SaveJobButton({
 
   return (
     <Button 
-      variant="outline" 
-      className="flex items-center gap-2"
+      variant={isSaved ? "default" : "outline"}
+      className={`flex items-center gap-2 ${isSaved ? 'bg-red-500 hover:bg-red-600 text-white' : ''}`}
       onClick={handleSaveJob}
       disabled={!isAuthenticated || isLoading}
     >
-      <Heart className={`size-4 ${isSaved ? 'fill-current text-red-500' : ''}`} />
-      {isSaved ? 'Saved' : 'Save Job'}
+      <Heart className={`size-4 ${isSaved ? 'fill-current' : ''}`} />
+      {isLoading ? 'Saving...' : (isSaved ? 'Already Saved' : 'Save Job')}
     </Button>
   );
 }

@@ -69,6 +69,20 @@ const MyJobs = () => {
 
   if (!user) return null;
 
+  // Redirect job seekers away from this page
+  if (user.user_type !== 'COMPANY') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <EmptyState
+          title="Access Restricted"
+          description="This page is only available for companies. As a job seeker, you can view your saved jobs and applications instead."
+          buttonText="View Saved Jobs"
+          href="/favorites"
+        />
+      </div>
+    );
+  }
+
   return (
     <>
       {jobs.length === 0 ? (

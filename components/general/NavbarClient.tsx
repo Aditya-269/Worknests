@@ -65,12 +65,22 @@ export function NavbarClient({ mobile = false }: NavbarClientProps) {
                 Post a Job
               </Link>
             )}
-            <Link
-              href="/my-jobs"
-              className="text-lg px-4 py-2 rounded-md bg-secondary hover:bg-secondary/80 transition-colors duration-200"
-            >
-              {user.user_type === "COMPANY" ? "My Jobs" : "Saved Jobs"}
-            </Link>
+            {/* Company: My Jobs, Job Seeker: Saved Jobs */}
+            {user.user_type === "COMPANY" ? (
+              <Link
+                href="/my-jobs"
+                className="text-lg px-4 py-2 rounded-md bg-secondary hover:bg-secondary/80 transition-colors duration-200"
+              >
+                My Jobs
+              </Link>
+            ) : (
+              <Link
+                href="/favorites"
+                className="text-lg px-4 py-2 rounded-md bg-secondary hover:bg-secondary/80 transition-colors duration-200"
+              >
+                Saved Jobs
+              </Link>
+            )}
             {user.user_type === "COMPANY" && (
               <Link
                 href="/my-jobs/applications"
