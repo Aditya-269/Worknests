@@ -87,88 +87,47 @@ def google_oauth_login(request):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@api_view(['POST'])
+# GitHub OAuth login removed# GitHub OAuth token exchange removed
+
+
+
+@api_view(["POST"])
 @permission_classes([AllowAny])
-def github_oauth_login(request):
-    """Handle GitHub OAuth login"""
+def google_token_exchange(request):
+    """Exchange Google authorization code for access token"""
     try:
-        access_token = request.data.get('access_token')
+        code = request.data.get("code")
+        redirect_uri = request.data.get("redirect_uri")
+        
+        if not code:
+            return Response({"error": "Authorization code is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Get Google client credentials from settings
+        google_client_id = settings.SOCIALACCOUNT_PROVIDERS["google"]["APP"]["client_id"]
+        google_client_secret = settings.SOCIALACCOUNT_PROVIDERS["google"]["APP"]["secret"]
+        
+        if not google_client_id or not google_client_secret:
+            return Response({"error": "Google OAuth not configured"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        # Exchange code for access token with Google
+        token_response = requests.post("https://oauth2.googleapis.com/token", {
+            "client_id": google_client_id,
+            "client_secret": google_client_secret,
+            "code": code,
+            "grant_type": "authorization_code",
+            "redirect_uri": redirect_uri,
+        })
+        
+        if token_response.status_code != 200:
+            return Response({"error": "Failed to exchange code for token"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        token_data = token_response.json()
+        access_token = token_data.get("access_token")
+        
         if not access_token:
-            return Response({'error': 'Access token is required'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "No access token received from Google"}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Get user data from GitHub
-        headers = {'Authorization': f'token {access_token}'}
-        github_response = requests.get('https://api.github.com/user', headers=headers)
-        
-        if github_response.status_code != 200:
-            return Response({'error': 'Invalid access token'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        github_data = github_response.json()
-        
-        # Get user emails from GitHub
-        emails_response = requests.get('https://api.github.com/user/emails', headers=headers)
-        emails_data = emails_response.json() if emails_response.status_code == 200 else []
-        
-        # Find primary email
-        primary_email = None
-        for email_data in emails_data:
-            if email_data.get('primary', False):
-                primary_email = email_data.get('email')
-                break
-        
-        if not primary_email:
-            # Fallback to email from user data
-            primary_email = github_data.get('email')
-        
-        if not primary_email:
-            return Response({'error': 'Email not provided by GitHub'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        name = github_data.get('name') or github_data.get('login', '')
-        github_id = str(github_data.get('id'))
-        
-        # Get or create user
-        user, created = CustomUser.objects.get_or_create(
-            email=primary_email,
-            defaults={
-                'username': primary_email,
-                'name': name,
-                'onboarding_completed': False,
-            }
-        )
-        
-        # Create or update social account
-        social_account, _ = SocialAccount.objects.get_or_create(
-            user=user,
-            provider='github',
-            defaults={
-                'uid': github_id,
-                'extra_data': github_data,
-            }
-        )
-        
-        # Generate JWT tokens
-        refresh = RefreshToken.for_user(user)
-        access_token = refresh.access_token
-        
-        # Prepare response
-        response_data = {
-            'access_token': str(access_token),
-            'user': UserSerializer(user).data
-        }
-        
-        # Create response and set refresh token as httpOnly cookie
-        response = Response(response_data, status=status.HTTP_200_OK)
-        response.set_cookie(
-            settings.SIMPLE_JWT_COOKIE_NAME,
-            str(refresh),
-            max_age=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds(),
-            httponly=settings.SIMPLE_JWT_COOKIE_HTTP_ONLY,
-            secure=settings.SIMPLE_JWT_COOKIE_SECURE,
-            samesite=settings.SIMPLE_JWT_COOKIE_SAMESITE,
-            domain=settings.SIMPLE_JWT_COOKIE_DOMAIN,
-        )
-        
-        return response
+        return Response({"access_token": access_token}, status=status.HTTP_200_OK)
         
     except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

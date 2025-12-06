@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/app/utils/auth-context";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { oauthClient } from "@/app/utils/oauth-client";
 import * as React from "react";
 import type { SVGProps } from "react";
 
@@ -84,7 +85,7 @@ const Google = (props: SVGProps<SVGSVGElement>) => (
 export function SignupForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
-  const { signup, loginWithGoogle, loginWithGitHub } = useAuth();
+  const { signup, loginWithGoogle } = useAuth();
   const router = useRouter();
 
   const form = useForm<z.infer<typeof signupSchema>>({
@@ -113,20 +114,18 @@ export function SignupForm() {
     }
   }
 
-  async function handleOAuthSignup(provider: 'google' | 'github') {
-    setOauthLoading(provider);
+  async function handleGoogleSignup() {
+    setOauthLoading('google');
     try {
-      const user = provider === 'google' 
-        ? await loginWithGoogle()
-        : await loginWithGitHub();
+      const user = await loginWithGoogle();
         
-      toast.success(`Signed up with ${provider === 'google' ? 'Google' : 'GitHub'} successfully!`);
+      toast.success('Signed up with Google successfully!');
       
       // Redirect to onboarding
       router.push("/onboarding");
     } catch (error: any) {
-      console.error(`${provider} signup error:`, error);
-      toast.error(error.message || `Failed to sign up with ${provider}. Please try again.`);
+      console.error('Google signup error:', error);
+      toast.error(error.message || 'Failed to sign up with Google. Please try again.');
     } finally {
       setOauthLoading(null);
     }
@@ -142,12 +141,12 @@ export function SignupForm() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* OAuth Signup Buttons */}
-          <div className="grid gap-4 mb-6">
+          {/* OAuth Signup Button */}
+          <div className="mb-6">
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => handleOAuthSignup('google')}
+              onClick={() => handleGoogleSignup()}
               disabled={!!oauthLoading || isLoading}
             >
               {oauthLoading === 'google' ? (
@@ -156,20 +155,6 @@ export function SignupForm() {
                 <Google className="mr-2 h-4 w-4" />
               )}
               Sign up with Google
-            </Button>
-            
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => handleOAuthSignup('github')}
-              disabled={!!oauthLoading || isLoading}
-            >
-              {oauthLoading === 'github' ? (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-              ) : (
-                <Github className="mr-2 h-4 w-4" />
-              )}
-              Sign up with GitHub
             </Button>
           </div>
 

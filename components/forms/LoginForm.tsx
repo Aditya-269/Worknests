@@ -27,6 +27,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import * as React from "react";
 import type { SVGProps } from "react";
+import { oauthClient } from "@/app/utils/oauth-client";
+import { authClient } from "@/app/utils/auth-client";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -82,8 +84,9 @@ interface LoginFormProps {
 
 export function LoginForm({ redirectUrl }: LoginFormProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [isOAuthLoading, setIsOAuthLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
-  const { login, loginWithGoogle, loginWithGitHub } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const router = useRouter();
 
   const form = useForm<z.infer<typeof loginSchema>>({
@@ -93,6 +96,33 @@ export function LoginForm({ redirectUrl }: LoginFormProps) {
       password: "",
     },
   });
+
+  const handleGoogleLogin = async () => {
+    setIsOAuthLoading(true);
+    try {
+      const result = await oauthClient.signInWithGoogle();
+      
+      // Set the tokens and user in auth context
+      authClient.setAccessToken(result.access_token);
+      await login();
+      
+      toast.success("Successfully signed in with Google!");
+      
+      // Check if user needs onboarding
+      if (!result.user.onboarding_completed) {
+        router.push("/onboarding");
+      } else {
+        router.push("/");
+      }
+    } catch (error: any) {
+      console.error("Google login error:", error);
+      toast.error(error.message || "Failed to sign in with Google");
+    } finally {
+      setIsOAuthLoading(false);
+    }
+  };
+
+  // GitHub OAuth removed
 
   async function onSubmit(values: z.infer<typeof loginSchema>) {
     setIsLoading(true);
@@ -104,7 +134,7 @@ export function LoginForm({ redirectUrl }: LoginFormProps) {
       if (redirectUrl) {
         // If there's a specific redirect URL, use it
         router.push(redirectUrl);
-      } else if (user.onboarding_completed) {
+      } else if (user && user.onboarding_completed) {
         // User has completed onboarding, go to home page
         router.push("/");
       } else {
@@ -123,14 +153,12 @@ export function LoginForm({ redirectUrl }: LoginFormProps) {
     }
   }
 
-  async function handleOAuthLogin(provider: 'google' | 'github') {
-    setOauthLoading(provider);
+  async function handleGoogleOAuthLogin() {
+    setOauthLoading('google');
     try {
-      const user = provider === 'google' 
-        ? await loginWithGoogle()
-        : await loginWithGitHub();
+      const user = await loginWithGoogle();
         
-      toast.success(`Logged in with ${provider === 'google' ? 'Google' : 'GitHub'} successfully!`);
+      toast.success('Logged in with Google successfully!');
       
       // Check onboarding status and redirect accordingly
       if (redirectUrl) {
@@ -144,8 +172,8 @@ export function LoginForm({ redirectUrl }: LoginFormProps) {
         router.push("/onboarding");
       }
     } catch (error: any) {
-      console.error(`${provider} login error:`, error);
-      toast.error(error.message || `Failed to log in with ${provider}. Please try again.`);
+      console.error('Google login error:', error);
+      toast.error(error.message || 'Failed to log in with Google. Please try again.');
     } finally {
       setOauthLoading(null);
     }
@@ -161,12 +189,12 @@ export function LoginForm({ redirectUrl }: LoginFormProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* OAuth Login Buttons */}
-          <div className="grid gap-4 mb-6">
+          {/* OAuth Login Button */}
+          <div className="mb-6">
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => handleOAuthLogin('google')}
+              onClick={() => handleGoogleOAuthLogin()}
               disabled={!!oauthLoading || isLoading}
             >
               {oauthLoading === 'google' ? (
@@ -175,20 +203,6 @@ export function LoginForm({ redirectUrl }: LoginFormProps) {
                 <Google className="mr-2 h-4 w-4" />
               )}
               Continue with Google
-            </Button>
-            
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => handleOAuthLogin('github')}
-              disabled={!!oauthLoading || isLoading}
-            >
-              {oauthLoading === 'github' ? (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-              ) : (
-                <Github className="mr-2 h-4 w-4" />
-              )}
-              Continue with GitHub
             </Button>
           </div>
 

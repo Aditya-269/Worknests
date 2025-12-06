@@ -58,7 +58,7 @@ class AuthClient {
   async signup(data: SignupData): Promise<AuthResponse> {
     try {
       const response = await apiClient.post<AuthResponse>('/api/auth/signup/', data);
-      this.setAccessToken(response.access_token);
+      this._setAccessToken(response.access_token);
       return response;
     } catch (error) {
       throw error as ApiError;
@@ -68,7 +68,7 @@ class AuthClient {
   async login(data: LoginData): Promise<AuthResponse> {
     try {
       const response = await apiClient.post<AuthResponse>('/api/auth/login/', data);
-      this.setAccessToken(response.access_token);
+      this._setAccessToken(response.access_token);
       return response;
     } catch (error) {
       throw error as ApiError;
@@ -77,7 +77,10 @@ class AuthClient {
 
   async logout(): Promise<void> {
     try {
-      await apiClient.post('/api/auth/logout/');
+      // Only call logout API if we have a token
+      if (this.accessToken) {
+        await apiClient.post('/api/auth/logout/');
+      }
     } catch (error) {
       // Continue with logout even if API call fails
       console.error('Logout API call failed:', error);
@@ -112,7 +115,7 @@ class AuthClient {
     this.refreshPromise = (async () => {
       try {
         const response = await apiClient.post<{ access_token: string }>('/api/auth/token/refresh/');
-        this.setAccessToken(response.access_token);
+        this._setAccessToken(response.access_token);
         return response.access_token;
       } catch (error) {
         this.clearTokens();
@@ -153,7 +156,7 @@ class AuthClient {
     }
   }
 
-  private setAccessToken(token: string) {
+  setAccessToken(token: string) {
     this.accessToken = token;
     apiClient.setAccessToken(token);
     
@@ -161,6 +164,10 @@ class AuthClient {
     if (typeof window !== 'undefined') {
       localStorage.setItem('access_token', token);
     }
+  }
+
+  private _setAccessToken(token: string) {
+    this.setAccessToken(token);
   }
 
   private clearTokens() {

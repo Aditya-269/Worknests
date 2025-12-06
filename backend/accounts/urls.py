@@ -10,7 +10,7 @@ from .views import (
     CreateCompanyView,
     CreateJobSeekerView,
 )
-from .oauth_views import google_oauth_login, github_oauth_login
+from .oauth_views import google_oauth_login, google_token_exchange
 
 urlpatterns = [
     # Authentication endpoints
@@ -21,7 +21,7 @@ urlpatterns = [
     
     # OAuth endpoints
     path('oauth/google/', google_oauth_login, name='google-oauth-login'),
-    path('oauth/github/', github_oauth_login, name='github-oauth-login'),
+    path('google/exchange/', google_token_exchange, name='google-token-exchange'),
     
     # User profile endpoints
     path('user/', UserProfileView.as_view(), name='user-profile'),

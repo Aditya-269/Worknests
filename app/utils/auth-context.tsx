@@ -8,10 +8,10 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<User>;
+  login: (email?: string, password?: string) => Promise<User | void>;
   signup: (email: string, password: string, name: string) => Promise<User>;
   loginWithGoogle: () => Promise<User>;
-  loginWithGitHub: () => Promise<User>;
+  // GitHub login removed
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   completeOnboarding: () => Promise<void>;
@@ -61,10 +61,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               created_at: new Date().toISOString()
             } as User);
           } else if (userError.status === 401 || userError.status === 403) {
-            // Invalid token
-            console.log('Invalid token detected, clearing auth state');
-            await authClient.logout();
-            setUser(null);
+            // Invalid token - try to refresh first
+            console.log('Invalid token detected, attempting refresh...');
+            try {
+              await authClient.refreshToken();
+              // Try fetching user again after refresh
+              const userData = await authClient.getUser();
+              setUser(userData);
+              console.log('Token refreshed successfully, user:', userData.email);
+            } catch (refreshError) {
+              console.log('Token refresh failed, clearing auth state');
+              await authClient.logout();
+              setUser(null);
+            }
           } else {
             // Other errors - keep current state
             console.log('Network error during user fetch, keeping auth state');
@@ -84,7 +93,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const login = async (email: string, password: string): Promise<User> => {
+  const login = async (email?: string, password?: string): Promise<User | void> => {
+    // If no email/password provided, just check existing auth state
+    if (!email || !password) {
+      return simpleLogin();
+    }
+    
     setIsLoading(true);
     try {
       const response = await authClient.login({ email, password });
@@ -115,7 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     try {
       const response = await oauthClient.signInWithGoogle();
-      authClient['setAccessToken'](response.access_token); // Set token in auth client
+      authClient.setAccessToken(response.access_token); // Set token in auth client
       setUser(response.user);
       return response.user;
     } finally {
@@ -123,15 +137,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const loginWithGitHub = async (): Promise<User> => {
-    setIsLoading(true);
-    try {
-      const response = await oauthClient.signInWithGitHub();
-      authClient['setAccessToken'](response.access_token); // Set token in auth client
-      setUser(response.user);
-      return response.user;
-    } finally {
-      setIsLoading(false);
+  // GitHub OAuth removed
+  
+  // Simple login method for form-based authentication
+  const simpleLogin = async (): Promise<void> => {
+    if (authClient.isAuthenticated()) {
+      try {
+        const userData = await authClient.getUser();
+        setUser(userData);
+      } catch (error) {
+        console.error('Failed to get user data during login:', error);
+        throw error;
+      }
     }
   };
 
@@ -174,7 +191,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     login,
     signup,
     loginWithGoogle,
-    loginWithGitHub,
+    // GitHub login removed
     logout,
     refreshUser,
     completeOnboarding,
