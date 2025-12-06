@@ -15,11 +15,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy backend code
 COPY backend/ /app/
 
-# Collect static files
+# Run Django setup commands
+RUN python manage.py migrate --noinput
 RUN python manage.py collectstatic --noinput
 
 # Expose port
 EXPOSE 8000
 
-# Run gunicorn
-CMD ["gunicorn", "worknest.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
+# Run gunicorn with better logging
+CMD ["gunicorn", "worknest.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--log-level", "debug", "--access-logfile", "-", "--error-logfile", "-"]
