@@ -91,23 +91,29 @@ def google_oauth_login(request):
 
 
 
-@api_view(["POST"])
+@api_view(['POST'])
 @permission_classes([AllowAny])
 def google_token_exchange(request):
     """Exchange Google authorization code for access token"""
     try:
-        code = request.data.get("code")
-        redirect_uri = request.data.get("redirect_uri")
+        code = request.data.get('code')
+        redirect_uri = request.data.get('redirect_uri')
         
         if not code:
-            return Response({"error": "Authorization code is required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Authorization code is required'}, status=status.HTTP_400_BAD_REQUEST)
         
         # Get Google client credentials from settings
-        google_client_id = settings.SOCIALACCOUNT_PROVIDERS["google"]["APP"]["client_id"]
-        google_client_secret = settings.SOCIALACCOUNT_PROVIDERS["google"]["APP"]["secret"]
+        google_client_id = settings.SOCIALACCOUNT_PROVIDERS['google']['APP']['client_id']
+        google_client_secret = settings.SOCIALACCOUNT_PROVIDERS['google']['APP']['secret']
+        
+        # Debug logging for production
+        print(f"DEBUG: Google Client ID: {google_client_id[:20]}...")
+        print(f"DEBUG: Google Client Secret: {google_client_secret[:15]}...")
+        print(f"DEBUG: Redirect URI: {redirect_uri}")
+        print(f"DEBUG: Auth Code: {code[:20]}...")
         
         if not google_client_id or not google_client_secret:
-            return Response({"error": "Google OAuth not configured"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'error': 'Google OAuth not configured'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         # Exchange code for access token with Google
         token_response = requests.post("https://oauth2.googleapis.com/token", {
@@ -119,7 +125,9 @@ def google_token_exchange(request):
         })
         
         if token_response.status_code != 200:
-            return Response({"error": "Failed to exchange code for token"}, status=status.HTTP_400_BAD_REQUEST)
+            print(f"DEBUG: Google API Error Status: {token_response.status_code}")
+            print(f"DEBUG: Google API Error Response: {token_response.text}")
+            return Response({'error': 'Failed to exchange code for token'}, status=status.HTTP_400_BAD_REQUEST)
         
         token_data = token_response.json()
         access_token = token_data.get("access_token")
