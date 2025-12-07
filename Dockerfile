@@ -11,4 +11,4 @@ RUN python manage.py collectstatic --noinput
 
 EXPOSE $PORT
 
-CMD sh -c "python manage.py migrate --verbosity=2 && gunicorn worknest.wsgi --log-file - --bind 0.0.0.0:$PORT"
+CMD sh -c "python manage.py migrate --verbosity=2 && python manage.py create_superuser --verbosity=2 && gunicorn worknest.wsgi --log-file - --bind 0.0.0.0:$PORT"
