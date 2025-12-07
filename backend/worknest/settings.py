@@ -141,6 +141,8 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:3001",
     "http://localhost:3002",
     "http://127.0.0.1:3002",
+    # Railway backend URL
+    "https://backend-github-production-1bc7.up.railway.app",
     # Vercel production and preview deployments
     "https://worknests.vercel.app",
     "https://worknests-git-main-aditya-269s-projects.vercel.app",
