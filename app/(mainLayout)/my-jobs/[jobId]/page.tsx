@@ -14,7 +14,7 @@ import { JsonToHtml } from "@/components/general/JsonToHtml";
 async function getMyJob(jobId: string, userId?: string) {
   try {
     // Direct server-side fetch to Django API
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
     const response = await fetch(`${backendUrl}/api/jobs/${jobId}/`, {
       method: 'GET',
       headers: {
